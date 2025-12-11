@@ -1,5 +1,6 @@
 package com.mylearn.auth.service;
 
+import com.mylearn.auth.client.UserServiceClient;
 import com.mylearn.auth.entity.User;
 import com.mylearn.auth.exception.AuthException;
 import com.mylearn.auth.repository.UserRepository;
@@ -7,6 +8,7 @@ import com.mylearn.common.dto.auth.LoginRequest;
 import com.mylearn.common.dto.auth.TokenResponse;
 import com.mylearn.common.dto.auth.UserRegistrationRequest;
 import com.mylearn.common.dto.auth.UserResponse;
+import com.mylearn.common.dto.user.InternalProfileCreationRequest;
 import com.mylearn.common.enums.UserRole;
 import jakarta.transaction.Transactional;
 import java.util.UUID;
@@ -34,6 +36,7 @@ public class AuthService {
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
+  private final UserServiceClient userServiceClient;
 
   @Transactional
   public UserResponse register(UserRegistrationRequest request) {
@@ -55,7 +58,30 @@ public class AuthService {
     User savedUser = userRepository.save(newUser);
     log.info("User registered successfully with ID: {}", savedUser.getId());
 
-    // 3. Prepare response DTO (excluding password hash)
+    // 3. MANDATORY ORCHESTRATION: Create the profile in the user-service
+    try {
+      InternalProfileCreationRequest profileCreationRequest = InternalProfileCreationRequest.builder()
+          .userId(savedUser.getId())
+          .fullName(request.getFullName())
+          .role(savedUser.getRole())
+          .build();
+
+      // Synchronous REST call to user-service
+      userServiceClient.createProfile(profileCreationRequest);
+
+      log.info("User profile created successfully in user-service for user ID: {}",
+          savedUser.getId());
+    } catch (Exception e) {
+      log.error(
+          "Failed to create user profile in user-service for user ID: {}. Rolling back registration. Error: {}",
+          savedUser.getId(), e.getMessage());
+      // Rollback the user creation to maintain data consistency
+      userRepository.deleteById(savedUser.getId());
+      throw new AuthException("Registration failed due to profile creation error.",
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // 4. Prepare response DTO (excluding password hash)
     return UserResponse.builder()
         .id(savedUser.getId())
         .email(savedUser.getEmail())

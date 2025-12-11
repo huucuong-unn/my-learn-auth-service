@@ -49,6 +49,13 @@ application:
       refresh-token:
         expiration: 604800000
 
+# --- Application Configuration ---
+app:
+  services:
+    # Service discovery URL for the User Service (DNS name in Docker/K8s)
+    # Used by WebClientConfig.java
+    user-service-url: http://user-service:8081
+
 # --- Logging Configuration ---
 #logging:
 #  level:
