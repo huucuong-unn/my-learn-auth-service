@@ -11,7 +11,7 @@ spring:
   datasource:
     # We use a service name (e.g., 'postgres') that will be resolvable either via
     # Docker Compose or Kubernetes Service Discovery.
-    url: jdbc:postgresql://localhost:5432/mylearndb
+    url: jdbc:postgresql://postgres:5432/mylearndb
     username: myuser
     password: mypassword
     driver-class-name: org.postgresql.Driver
