@@ -60,33 +60,35 @@ public class AuthService {
 
     // 3. MANDATORY ORCHESTRATION: Create the profile in the user-service
     try {
-      InternalProfileCreationRequest profileCreationRequest = InternalProfileCreationRequest.builder()
-          .userId(savedUser.getId())
-          .fullName(request.getFullName())
-          .role(savedUser.getRole())
-          .build();
+      InternalProfileCreationRequest profileCreationRequest =
+          InternalProfileCreationRequest.builder()
+              .userId(savedUser.getId())
+              .fullName(request.getFullName())
+              .role(savedUser.getRole())
+              .build();
 
       // Synchronous REST call to user-service
       userServiceClient.createProfile(profileCreationRequest);
 
-      log.info("User profile created successfully in user-service for user ID: {}",
-          savedUser.getId());
+      log.info(
+          "User profile created successfully in user-service for user ID: {}", savedUser.getId());
     } catch (Exception e) {
       log.error(
           "Failed to create user profile in user-service for user ID: {}. Rolling back registration. Error: {}",
-          savedUser.getId(), e.getMessage());
+          savedUser.getId(),
+          e.getMessage());
       // Rollback the user creation to maintain data consistency
       userRepository.deleteById(savedUser.getId());
-      throw new AuthException("Registration failed due to profile creation error.",
-          HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new AuthException(
+          "Registration failed due to profile creation error.", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // 4. Prepare response DTO (excluding password hash)
     return UserResponse.builder()
         .id(savedUser.getId())
         .email(savedUser.getEmail())
-        .fullName(
-            request.getFullName()) // Full name is only known during registration here; it will be
+        .fullName(request.getFullName())
+        // Full name is only known during registration here; it will be
         // stored in user-service later.
         .role(savedUser.getRole())
         .build();

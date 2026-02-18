@@ -26,8 +26,8 @@ public class UserServiceClient {
    * registration in the auth-service.
    */
   public UserProfileResponse createProfile(InternalProfileCreationRequest request) {
-    log.info("Sending profile creation request to user-service for user ID: {}",
-        request.getUserId());
+    log.info(
+        "Sending profile creation request to user-service for user ID: {}", request.getUserId());
 
     // This is a synchronous call (using block()) in a traditional Spring MVC controller,
     // which is generally acceptable for mandatory service-to-service orchestration steps.
@@ -35,23 +35,31 @@ public class UserServiceClient {
     // (which you plan to implement later for notifications).
     try {
 
-      return userServiceWebClient.post()
+      return userServiceWebClient
+          .post()
           .uri("/internal/profiles")
           .contentType(MediaType.APPLICATION_JSON)
           .body(BodyInserters.fromValue(request))
           .retrieve()
           // Handle Http error status codes (e.g 4xx, 5xx) appropriately
-          .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-              clientResponse -> clientResponse.bodyToMono(String.class)
-                  .flatMap(errorBody -> {
-                    log.error("User service error ({}): {}", clientResponse.statusCode(),
-                        errorBody);
-                    return Mono.error(new UserServiceClientException(
-                        "Failed to create profile " + clientResponse.statusCode() + " - "
-                            + errorBody
-                    ));
-                  })
-          )
+          .onStatus(
+              status -> status.is4xxClientError() || status.is5xxServerError(),
+              clientResponse ->
+                  clientResponse
+                      .bodyToMono(String.class)
+                      .flatMap(
+                          errorBody -> {
+                            log.error(
+                                "User service error ({}): {}",
+                                clientResponse.statusCode(),
+                                errorBody);
+                            return Mono.error(
+                                new UserServiceClientException(
+                                    "Failed to create profile "
+                                        + clientResponse.statusCode()
+                                        + " - "
+                                        + errorBody));
+                          }))
           .bodyToMono(UserProfileResponse.class)
           .block(); // Block until the response is received
 

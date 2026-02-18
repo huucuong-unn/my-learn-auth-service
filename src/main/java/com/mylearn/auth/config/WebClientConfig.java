@@ -5,9 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
-/**
- * Configuration for setting up WebClient beans for inter-service communication.
- */
+/** Configuration for setting up WebClient beans for inter-service communication. */
 @Configuration
 public class WebClientConfig {
 
@@ -16,8 +14,6 @@ public class WebClientConfig {
 
   @Bean
   public WebClient userServiceWebClient() {
-    return WebClient.builder()
-        .baseUrl(userServiceUrl)
-        .build();
+    return WebClient.builder().baseUrl(userServiceUrl).build();
   }
 }

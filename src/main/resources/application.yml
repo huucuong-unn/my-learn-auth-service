@@ -3,7 +3,8 @@ server:
   # Context path is explicitly defined here, but in a Kubernetes/Gateway setup,
   # the service would be accessed via its internal service name (auth-service)
   servlet:
-    context-path: /api/v1/auth
+    context-path: /auth-service
+  shutdown: graceful
 
 spring:
   application:
@@ -49,12 +50,26 @@ application:
       refresh-token:
         expiration: 604800000
 
+management:
+  endpoints:
+    web:
+      exposure:
+        # Expose only health for security; metrics/info can be added later
+        include: health
+  endpoint:
+    health:
+      # Enables /actuator/health/liveness and /actuator/health/readiness
+      probes:
+        enabled: true
+      # Shows detailed health info (useful for debugging, can be restricted in prod)
+      show-details: always
+
 # --- Application Configuration ---
 app:
   services:
     # Service discovery URL for the User Service (DNS name in Docker/K8s)
     # Used by WebClientConfig.java
-    user-service-url: http://user-service:8081
+    user-service-url: http://user-service:8081/user-service
 
 # --- Logging Configuration ---
 #logging:
