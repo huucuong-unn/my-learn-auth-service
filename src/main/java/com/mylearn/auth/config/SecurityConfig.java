@@ -43,7 +43,9 @@ public class SecurityConfig {
                         AUTHORIZATION_REGISTER_REQUEST_MAPPING,
                         AUTHORIZATION_LOGIN_REQUEST_MAPPING,
                         AUTHORIZATION_REFRESH_REQUEST_MAPPING,
-                        AUTHORIZATION_VALIDATE_REQUEST_MAPPING)
+                        AUTHORIZATION_VALIDATE_REQUEST_MAPPING,
+                        "/actuator/health/**"
+                    )
                     .permitAll()
                     // All other requests require authentication (though this service is mostly open
                     // for JWT tasks)
